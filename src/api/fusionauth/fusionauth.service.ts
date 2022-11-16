@@ -16,13 +16,14 @@ import FusionAuthClient, {
 } from '@fusionauth/typescript-client';
 
 import ClientResponse from '@fusionauth/typescript-client/build/src/ClientResponse';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { catchError, map } from 'rxjs';
 import { QueryGeneratorService } from './query-generator/query-generator.service';
 import { ConfigResolverService } from '../config.resolver.service';
 import { RefreshRequest } from '@fusionauth/typescript-client/build/src/FusionAuthClient';
 import { RefreshTokenResult } from '../api.interface';
+import { FusionAuthUserRegistration } from '../../admin/admin.interface';
 
 export enum FAStatus {
   SUCCESS = 'SUCCESS',
@@ -33,6 +34,8 @@ export enum FAStatus {
 @Injectable()
 export class FusionauthService {
   fusionauthClient: FusionAuthClient;
+
+  protected readonly logger = new Logger(FusionauthService.name); // logger instance
 
   constructor(
     private readonly httpService: HttpService,
@@ -617,6 +620,32 @@ export class FusionauthService {
             refreshToken: null,
             tokenExpirationInstant: null,
           },
+        };
+      });
+  }
+
+  async updateUserRegistration(userId: UUID, registration: FusionAuthUserRegistration): Promise<{_userId: UUID, registration: FusionAuthUserRegistration, err: Error}> {
+    return this.fusionauthClient
+      .patchRegistration(userId, { registration: registration })
+      .then(
+        (
+          response: ClientResponse<RegistrationResponse>,
+        ): { _userId: UUID; registration: FusionAuthUserRegistration; err: Error } => {
+          this.logger.log('Found user');
+          this.logger.log(JSON.stringify(response));
+          return {
+            _userId: userId,
+            registration: response.response.registration,
+            err: null
+          };
+        },
+      )
+      .catch((e): { _userId: UUID; registration: FusionAuthUserRegistration; err: Error } => {
+        this.logger.error(`Could not update user ${userId}`, JSON.stringify(e));
+        return {
+          _userId: null,
+          registration: null,
+          err: e
         };
       });
   }

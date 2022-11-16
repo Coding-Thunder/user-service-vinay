@@ -15,6 +15,8 @@ import { OtpService } from './otp/otp.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigResolverService } from './config.resolver.service';
 import { RefreshRequest } from '@fusionauth/typescript-client/build/src/FusionAuthClient';
+import { FusionAuthUserRegistration } from '../admin/admin.interface';
+import { AdminService } from '../admin/admin.service';
 const CryptoJS = require('crypto-js');
 const AES = require('crypto-js/aes');
 
@@ -201,12 +203,34 @@ async createUser(data: UserRegistration, applicationId: string, authHeader?: str
     return response;
   }
 
-  async updateUser(userId: string, data: User, applicationId: string, authHeader?: string): Promise<any> {
+  async updateUser(
+    userId: string,
+    data: User,
+    applicationId: string,
+    authHeader?: string,
+  ): Promise<any> {
+    const registrations: Array<FusionAuthUserRegistration> = data?.registrations
+      ? data.registrations
+      : [];
+    delete data.registrations; // delete the registrations key
+
     const { _userId, user, err }: { _userId: UUID; user: User; err: Error } =
-      await this.fusionAuthService.updateUser(userId, {user: data}, applicationId, authHeader);
+      await this.fusionAuthService.updateUser(
+        userId,
+        { user: data },
+        applicationId,
+        authHeader,
+      );
     if (_userId == null || user == null) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
+
+    // if there are registrations Array, we'll update the registrations too
+    for (const registration of registrations) {
+      console.log(registration);
+      await this.updateUserRegistration(userId, registration); // calling patch registration API
+    }
+
     const response: SignupResponse = new SignupResponse().init(uuidv4());
     response.result = user;
     return response;
@@ -280,5 +304,22 @@ async createUser(data: UserRegistration, applicationId: string, authHeader?: str
     }
 
     return response;
+  }
+
+  async updateUserRegistration(
+    userId: UUID,
+    data: FusionAuthUserRegistration,
+  ): Promise<any> {
+    const {
+      _userId,
+      registration,
+      err,
+    }: { _userId: UUID; registration: FusionAuthUserRegistration; err: Error } =
+      await this.fusionAuthService.updateUserRegistration(userId, data);
+
+    if (_userId == null || registration == null) {
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
+    }
+    return registration;
   }
 }
