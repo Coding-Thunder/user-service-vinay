@@ -24,7 +24,10 @@ import { FAStatus } from '../user/fusionauth/fusionauth.service';
 import { ChangePasswordDTO } from '../user/dto/changePassword.dto';
 import { SMSResponseStatus } from '../user/sms/sms.interface';
 import * as speakeasy from 'speakeasy';
+import totp from 'totp-generator';
 import { JwtService } from '@nestjs/jwt';
+import { getToken, validate } from 'ts-totp';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const CryptoJS = require('crypto-js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -37,7 +40,8 @@ export class ApiService {
   encodedBase64Key;
   parsedBase64Key;
   otpDb: any;
-  key;
+  key: any;
+  params: any;
   constructor(
     private configService: ConfigService,
     private readonly fusionAuthService: FusionauthService,
@@ -47,7 +51,7 @@ export class ApiService {
   ) {
     this.otpDb = {};
     // this.key = process.env.APP_KEY;
-    this.key = 'application_key';
+    this.key = 'JBSWY3DPEHPK3PXP';
   }
 
   login(user: any, authHeader: string): Promise<SignupResponse> {
@@ -518,36 +522,31 @@ export class ApiService {
     return response;
   }
 
-  // async sendOtp(phone: string, expiry: string) {
+  // async sendOtp(phone: string, expiry: number) {
   //   try {
   //     let otp = Math.floor(1000 + Math.random() * 9000);
 
   //     if (otp) {
-  //       this.otpDb[`${phone}${this.key}`] = await this.jwtService.signAsync(
+  //       let token = await this.jwtService.signAsync(
   //         { phone, otp },
   //         { expiresIn: `${expiry}s` },
   //       );
+  //       return { otp, token };
   //     }
-  //     return { otp };
   //   } catch (error) {
   //     throw new HttpException(error.message, 500);
   //   }
   // }
 
-  // async verifyOtp(phone: string, otp: string) {
+  // async verifyOtp(phone: string, otp: string, token: string) {
   //   try {
-  //     let keyToCheck = `${phone}${this.key}`;
+  //     let data = await this.jwtService.verifyAsync(token);
+  //     let verified = phone == data?.phone && otp == data?.otp;
 
-  //     if (keyToCheck in this.otpDb && otp) {
-  //       //  time based verification
-  //       let token = this.otpDb[keyToCheck];
-  //       let data = await this.jwtService.verifyAsync(token);
-  //       let verified = phone == data?.phone && otp == data?.otp;
-  //       if (verified) {
-  //         return { message: 'verified' };
-  //       }
+  //     if (verified) {
+  //       return { message: 'Verified' };
   //     }
-  //     delete this.otpDb[keyToCheck];
+
   //     throw new HttpException('in valid otp', 500);
   //   } catch {
   //     throw new HttpException('otp expired', 500);
@@ -559,6 +558,8 @@ export class ApiService {
       const otp = speakeasy.totp({
         secret: `${phone}${this.key}`,
         encoding: 'base32',
+        step: 10,
+        window: 2,
       });
 
       if (otp) {
@@ -573,15 +574,18 @@ export class ApiService {
 
   async verifyOtp(phone: string, otp: string, expiry: number) {
     try {
-      var tokenValidates = speakeasy.totp.verify({
+      var verified = await speakeasy.totp.verifyDelta({
         secret: `${phone}${this.key}`,
         encoding: 'base32',
         token: otp,
-        window: 1,
+        step: 10,
+        window: 2,
       });
 
-      if (tokenValidates) {
-        console.log(tokenValidates);
+      console.log(verified);
+
+      if (verified) {
+        console.log(verified);
         return { message: 'verified' };
       }
       throw new HttpException('in valid otp', 500);
@@ -589,4 +593,41 @@ export class ApiService {
       throw new HttpException('otp expired', 500);
     }
   }
+
+  // async sendOtp(phone: string, expiry: number) {
+  //   try {
+  //     const otp = getToken({
+  //       secret: `${phone}${this.key}`,
+  //       digits: 8,
+  //       interval: expiry,
+  //     });
+  //     console.log(otp);
+
+  //     if (otp) {
+  //       return { otp };
+  //     }
+  //     throw new HttpException('Malformed request', 500);
+  //   } catch (error) {
+  //     throw new HttpException(error.message, 500);
+  //   }
+  // }
+
+  // async verifyOtp(phone: string, otp: string, expiry: number) {
+  //   try {
+  //     console.log(otp)
+  //     const tokenValidates = validate(otp, {
+  //       secret: `${phone}${this.key}`,
+  //       digits: 8,
+  //       interval: expiry,
+  //     });
+
+  //     console.log(tokenValidates);
+  //     if (tokenValidates) {
+  //       return { message: 'verified' };
+  //     }
+  //     throw new HttpException('in valid otp', 500);
+  //   } catch (error) {
+  //     throw new HttpException(error.message, 500);
+  //   }
+  // }
 }

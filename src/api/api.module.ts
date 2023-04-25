@@ -39,7 +39,7 @@ const otpServiceFactory = {
     HttpModule,
     ConfigModule,
     // JwtModule.register({ secret: process.env.APP_KEY }),
-    JwtModule.register({ secret: 'application_key' }),
+    JwtModule.register({ secret: 'JBSWY3DPEHPK3PXP' }),
   ],
   controllers: [ApiController],
   providers: [

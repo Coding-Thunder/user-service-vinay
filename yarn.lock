@@ -4669,6 +4669,11 @@ jsonwebtoken@^9.0.0, jsonwebtoken@9.0.0:
     ms "^2.1.1"
     semver "^7.3.8"
 
+jssha@^3.1.2, jssha@^3.2.0:
+  version "3.3.0"
+  resolved "https://registry.npmjs.org/jssha/-/jssha-3.3.0.tgz"
+  integrity sha512-w9OtT4ALL+fbbwG3gw7erAO0jvS5nfvrukGPMWIAoea359B26ALXGpzy4YJSp9yGnpUvuvOw1nSjSoHDfWSr1w==
+
 jwa@^1.4.1:
   version "1.4.1"
   resolved "https://registry.npmjs.org/jwa/-/jwa-1.4.1.tgz"
@@ -6431,6 +6436,13 @@ toidentifier@1.0.1:
   resolved "https://registry.npmjs.org/toidentifier/-/toidentifier-1.0.1.tgz"
   integrity sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==
 
+totp-generator@^0.0.14:
+  version "0.0.14"
+  resolved "https://registry.npmjs.org/totp-generator/-/totp-generator-0.0.14.tgz"
+  integrity sha512-vFZ8N2TdF4mCj8bUW460jI73LqS+JKccsZ8cttQSuXa3dkTmZo8q81Pq2yAuiPxCI5fPfUrfaKuU+7adjx5s4w==
+  dependencies:
+    jssha "^3.1.2"
+
 tough-cookie@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/tough-cookie/-/tough-cookie-4.0.0.tgz"
@@ -6499,6 +6511,13 @@ ts-node@^10.0.0:
     make-error "^1.1.1"
     v8-compile-cache-lib "^3.0.1"
     yn "3.1.1"
+
+ts-totp@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.npmjs.org/ts-totp/-/ts-totp-1.1.1.tgz"
+  integrity sha512-dNgniWjF9bYm+nNQwG47vvLlsG1H0dp1ymSWpOfXRDRGaanGnUtXbwADdakVPweyLlCmkB+10vIbAlX2LdgHYw==
+  dependencies:
+    jssha "^3.2.0"
 
 tsconfig-paths-webpack-plugin@3.5.2:
   version "3.5.2"
