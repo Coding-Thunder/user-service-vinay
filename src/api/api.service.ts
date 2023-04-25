@@ -24,9 +24,6 @@ import { FAStatus } from '../user/fusionauth/fusionauth.service';
 import { ChangePasswordDTO } from '../user/dto/changePassword.dto';
 import { SMSResponseStatus } from '../user/sms/sms.interface';
 import * as speakeasy from 'speakeasy';
-import totp from 'totp-generator';
-import { JwtService } from '@nestjs/jwt';
-import { getToken, validate } from 'ts-totp';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const CryptoJS = require('crypto-js');
@@ -47,7 +44,6 @@ export class ApiService {
     private readonly fusionAuthService: FusionauthService,
     private readonly otpService: OtpService,
     private readonly configResolverService: ConfigResolverService,
-    private readonly jwtService: JwtService,
   ) {
     this.otpDb = {};
     // this.key = process.env.APP_KEY;

@@ -45,6 +45,7 @@ export class ApiController {
     };
   }
 
+  //  otp from speak easy
   @Get('sendOTP')
   async sendOTP(
     @Body() { phone, expiry, errorMessage }: Record<string, any>,

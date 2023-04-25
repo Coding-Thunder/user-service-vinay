@@ -49,8 +49,6 @@
     "rxjs": "^7.8.0",
     "speakeasy": "^2.0.0",
     "swagger-ui-express": "^4.1.6",
-    "totp-generator": "^0.0.14",
-    "ts-totp": "^1.1.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
