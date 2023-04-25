@@ -522,44 +522,12 @@ export class ApiService {
     return response;
   }
 
-  // async sendOtp(phone: string, expiry: number) {
-  //   try {
-  //     let otp = Math.floor(1000 + Math.random() * 9000);
-
-  //     if (otp) {
-  //       let token = await this.jwtService.signAsync(
-  //         { phone, otp },
-  //         { expiresIn: `${expiry}s` },
-  //       );
-  //       return { otp, token };
-  //     }
-  //   } catch (error) {
-  //     throw new HttpException(error.message, 500);
-  //   }
-  // }
-
-  // async verifyOtp(phone: string, otp: string, token: string) {
-  //   try {
-  //     let data = await this.jwtService.verifyAsync(token);
-  //     let verified = phone == data?.phone && otp == data?.otp;
-
-  //     if (verified) {
-  //       return { message: 'Verified' };
-  //     }
-
-  //     throw new HttpException('in valid otp', 500);
-  //   } catch {
-  //     throw new HttpException('otp expired', 500);
-  //   }
-  // }
-
   async sendOtp(phone: string, expiry: number) {
     try {
       const otp = speakeasy.totp({
         secret: `${phone}${this.key}`,
         encoding: 'base32',
-        step: 10,
-        window: 2,
+        step: expiry,
       });
 
       if (otp) {
@@ -574,12 +542,11 @@ export class ApiService {
 
   async verifyOtp(phone: string, otp: string, expiry: number) {
     try {
-      var verified = await speakeasy.totp.verifyDelta({
+      var verified = await speakeasy.totp.verify({
         secret: `${phone}${this.key}`,
         encoding: 'base32',
         token: otp,
-        step: 10,
-        window: 2,
+        step: expiry,
       });
 
       console.log(verified);
@@ -593,41 +560,4 @@ export class ApiService {
       throw new HttpException('otp expired', 500);
     }
   }
-
-  // async sendOtp(phone: string, expiry: number) {
-  //   try {
-  //     const otp = getToken({
-  //       secret: `${phone}${this.key}`,
-  //       digits: 8,
-  //       interval: expiry,
-  //     });
-  //     console.log(otp);
-
-  //     if (otp) {
-  //       return { otp };
-  //     }
-  //     throw new HttpException('Malformed request', 500);
-  //   } catch (error) {
-  //     throw new HttpException(error.message, 500);
-  //   }
-  // }
-
-  // async verifyOtp(phone: string, otp: string, expiry: number) {
-  //   try {
-  //     console.log(otp)
-  //     const tokenValidates = validate(otp, {
-  //       secret: `${phone}${this.key}`,
-  //       digits: 8,
-  //       interval: expiry,
-  //     });
-
-  //     console.log(tokenValidates);
-  //     if (tokenValidates) {
-  //       return { message: 'verified' };
-  //     }
-  //     throw new HttpException('in valid otp', 500);
-  //   } catch (error) {
-  //     throw new HttpException(error.message, 500);
-  //   }
-  // }
 }

@@ -74,6 +74,35 @@ export class ApiController {
     return await this.apiService.verifyOtp(phone, otp, Number(expiry));
   }
 
+  // @Get('sendOTP')
+  // async sendOTP(
+  //   @Query('phone') phone,
+  //   @Query('errorMessage') errorMessage = 'User not found.',
+  //   @Headers('x-application-id') applicationId?,
+  // ): Promise<any> {
+  //   if (applicationId) {
+  //     const { total }: { total: number; users: Array<User> } =
+  //       await this.fusionAuthService.getUsersByString(
+  //         `(username: ${phone}, mobilePhone: ${phone})`,
+  //         0,
+  //         1,
+  //         applicationId,
+  //         null,
+  //       );
+  //     if (!total || total == 0) {
+  //       throw new UnprocessableEntityException(errorMessage);
+  //     }
+  //   }
+  //   const status: SMSResponse = await this.otpService.sendOTP(phone);
+  //   return { status };
+  // }
+
+  // @Get('verifyOTP')
+  // async verifyOTP(@Query('phone') phone, @Query('otp') otp): Promise<any> {
+  //   const status: SMSResponse = await this.otpService.verifyOTP({ phone, otp });
+  //   return { status };
+  // }
+
   @Post('login')
   async login(
     @Body() user: any,
