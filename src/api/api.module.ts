@@ -10,16 +10,12 @@ import { OtpService } from './otp/otp.service';
 import { GupshupService } from './sms/gupshup/gupshup.service';
 import { SmsService } from './sms/sms.service';
 import got from 'got/dist/source';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 
 const gupshupFactory = {
   provide: 'OtpService',
   useFactory: (username, password, baseUrl) => {
-    return new GupshupService(
-      username,
-      password,
-      baseUrl,
-      got,
-    );
+    return new GupshupService(username, password, baseUrl, got);
   },
   inject: [],
 };
@@ -27,14 +23,32 @@ const gupshupFactory = {
 const otpServiceFactory = {
   provide: OtpService,
   useFactory: (config: ConfigService) => {
-    return new OtpService(gupshupFactory.useFactory(config.get('GUPSHUP_USERNAME'), config.get('GUPSHUP_PASSWORD'), config.get('GUPSHUP_BASEURL'),));
+    return new OtpService(
+      gupshupFactory.useFactory(
+        config.get('GUPSHUP_USERNAME'),
+        config.get('GUPSHUP_PASSWORD'),
+        config.get('GUPSHUP_BASEURL'),
+      ),
+    );
   },
   inject: [ConfigService],
 };
 
 @Module({
-  imports: [HttpModule, ConfigModule],
+  imports: [
+    HttpModule,
+    ConfigModule,
+    // JwtModule.register({ secret: process.env.APP_KEY }),
+    JwtModule.register({ secret: 'application_key' }),
+  ],
   controllers: [ApiController],
-  providers: [ApiService, FusionauthService, SmsService, otpServiceFactory, QueryGeneratorService, ConfigResolverService]
+  providers: [
+    ApiService,
+    FusionauthService,
+    SmsService,
+    otpServiceFactory,
+    QueryGeneratorService,
+    ConfigResolverService,
+  ],
 })
 export class ApiModule {}

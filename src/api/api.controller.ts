@@ -4,10 +4,12 @@ import {
   Controller,
   Get,
   Headers,
+  HttpException,
   Param,
   Patch,
   Post,
-  Query, UnprocessableEntityException,
+  Query,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import {
   SignupResponse,
@@ -45,31 +47,31 @@ export class ApiController {
 
   @Get('sendOTP')
   async sendOTP(
-    @Query('phone') phone,
-    @Query('errorMessage') errorMessage = 'User not found.',
+    @Body() { phone, expiry, errorMessage }: Record<string, any>,
     @Headers('x-application-id') applicationId?,
   ): Promise<any> {
-    if (applicationId) {
-      const { total }: { total: number; users: Array<User> } =
-        await this.fusionAuthService.getUsersByString(
-          `(username: ${phone}, mobilePhone: ${phone})`,
-          0,
-          1,
-          applicationId,
-          null,
-        );
-      if (!total || total == 0) {
-        throw new UnprocessableEntityException(errorMessage);
-      }
+    if (!phone) {
+      throw new HttpException('Phone number is required', 400);
     }
-    const status: SMSResponse = await this.otpService.sendOTP(phone);
-    return { status };
+
+    if (!expiry) {
+      throw new HttpException('Expiry is  required', 400);
+    }
+    let otp = await this.apiService.sendOtp(phone, Number(expiry));
+    if (otp) {
+      return otp;
+    }
+    return { errorMessage };
   }
 
   @Get('verifyOTP')
-  async verifyOTP(@Query('phone') phone, @Query('otp') otp): Promise<any> {
-    const status: SMSResponse = await this.otpService.verifyOTP({ phone, otp });
-    return { status };
+  async verifyOTP(
+    @Body() { phone, otp, expiry }: Record<string, any>,
+  ): Promise<any> {
+    if (!phone || !otp) {
+      throw new HttpException('Bad Request', 400);
+    }
+    return await this.apiService.verifyOtp(phone, otp, Number(expiry));
   }
 
   @Post('login')
@@ -235,7 +237,7 @@ export class ApiController {
     @Headers('authorization') authHeader,
     @Headers('x-application-id') applicationId,
   ): Promise<UsersResponse> {
-    const queryString = `(id: ${userId})`;  // pass the strict user ID filter
+    const queryString = `(id: ${userId})`; // pass the strict user ID filter
     return await this.apiService.fetchUsersByString(
       queryString,
       undefined,
